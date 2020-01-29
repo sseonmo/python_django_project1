@@ -4,6 +4,7 @@ from django.db import models
 
 
 class Product(models.Model):
+    objects = models.Manager()
     name = models.CharField(max_length=256, verbose_name='상품명')
     price = models.IntegerField(verbose_name='상품가격')
     description = models.TextField(verbose_name='상품설명')

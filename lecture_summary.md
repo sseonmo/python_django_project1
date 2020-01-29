@@ -147,3 +147,42 @@ class ProductList(ListView):
 {% endfor %}
 ...
 ```
+
+## [DetailView](https://docs.djangoproject.com/ko/3.0/ref/class-based-views/generic-display/)
+- DB table의 특정 record 를 상세내용을 표시할 때 활용할 수 있다. 
+- 조회시 사용할 Primary Key 값은 URLconf에서 추출하여 뷰로 넘오온 파라미터(pk)를 사용한다.
+```python
+# urls.py
+from product.views import ProductDeatil
+
+urlpatterns = [
+    ....
+    path('product/<int:pk>/', ProductDeatil.as_view()),
+]
+
+---
+
+# views.py
+from django.shortcuts import render
+from django.views.generic import ListView, DetailView
+from .models import Product
+
+
+class ProductDeatil(DetailView):
+    # 디폴트 템플릿명: <app_label>/<model_name>_detail.html
+    template_name = 'product_detail.html'
+    # 기본적으로는 모델의 모든 객체들을 전부 반환하지만 위에서 qureyset 이 지정이 되어 있다면 그 queryset 에 맞게 객체를 return 합니다.
+    queryset = Product.objects.all()
+    # 디폴트 컨텍스트 변수명 :  object
+    context_object_name = 'product'
+
+# 디폴트 설정을 그대로 사용한다면 아래와 같이 간단하게 작성할 수 있다
+# class ProductDeatil(DetailView):
+   # 해당 모델 - URLConf 의 PK 변수를 활용하여 해당 모델의 특정 record를 컨텍스트 변수(object)에 담는다.
+#     model = Product 
+
+```
+- 참고사이트
+>https://ssungkang.tistory.com/entry/Django-CBV-2-Generic-display-views
+https://wayhome25.github.io/django/2017/05/02/CBV/  
+

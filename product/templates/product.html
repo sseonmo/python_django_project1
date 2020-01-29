@@ -18,7 +18,7 @@
                 {% for product in product_list %}
                 <tr>
                     <td scope="row">{{ product.id }}</td>
-                    <td>{{ product.name }}</td>
+                    <td><a href="/product/{{product.id}}/"> {{ product.name }}</a></td>
                     <td>{{ product.price|intcomma }} 원</td>
                     <td>{{ product.register_data|date:"Y-m-d h:i" }}</td>
                 </tr>
