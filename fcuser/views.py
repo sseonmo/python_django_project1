@@ -15,6 +15,7 @@ class RegisterView(FormView):
 
 
 class LoginView(FormView):
+    print("========== LoginView =============")
     template_name = 'login.html'
     form_class = LoginForm
     success_url = '/'
