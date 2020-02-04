@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load humanize %}
+<!-- todo 어떤기능이 있는지 정리필요 -->
+<!-- 여러 filter를 사용할 수 있다. -->
+{% block contents %}
+<div class="row mt-5">
+    <div class="col-12">
+        <table class="table table-light">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">상품명</th>
+                    <th scope="col">수량</th>
+                    <th scope="col">주문날짜</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in order_list %}
+                <tr>
+                    <td scope="row">{{ order.id }}</td>
+                    <td>{{ order.product }}</td>
+                    <td>{{ order.quantity|intcomma }} 개</td>
+                    <td>{{ order.register_date|date:"Y-m-d h:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

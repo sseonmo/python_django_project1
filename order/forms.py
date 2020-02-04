@@ -7,6 +7,9 @@ from django.db import transaction
 
 class RegisterForm(forms.Form):
 
+    # Session은 request에 존재하므로 Form에서는 사용 불가.
+    # 따라서 FormView의 생성자가 request를 포함하도록 변경
+
     def __init__(self, request, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request = request

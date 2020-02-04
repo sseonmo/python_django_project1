@@ -1,5 +1,5 @@
 ##  class has no objects member 에러 
-1. 파이썬의 오류를 찾아주는 라이브러리 pylint-django 설치
+
 ```python
 # 1.설치
 pip install pylint_django
@@ -83,11 +83,30 @@ class AboutView(TemplateView):
 	template_name = 'about.html'
 
 ``` 
+## Django Form 처리과정
+![](images/form_process.png)
+위의 다이어그램에 기반하여, Django 폼이 주요하게 다루는 것은 다음과 같다. 
+
+1. 사용자가 처음으로 폼을 요청할 때 기본 폼을 보여준다.
+    - 폼은 비어있는 필드가 있을 수 있다 (예를 들면, 새로운 책을 등록할 경우) 아니면 
+    초기값으로 채워진 필드가 있을 수도 있다. ( 예를 들면, 기존의 책을 수정하거나, 흔히 사용하는 초기값이 있을경우)
+    - 이 시점의 폼은 (초기값이 있긴해도) 유저가 입력한 값에 연관되지 않았기에  unbound 상태라고 불린다.
+1. 제출 요청으로 부터 데이타를 수집하고 그것을 폼에 결합한다.
+    - 데이타를 폼에 결합(binding) 한다는 것은 사용자 입력 데이타와 유효성을 위반한 경우의 에러메시지가 폼을 재표시할 필요가 있을 때 준비되었다는 의미이다.
+1. 데이타를 다듬어서 유효성을 검증한다.
+    - 데이타를 다듬는다는 것은 사용자 입력을 정화(sanitisation) 하고 (예를 들면, 잠재적으로 악의적인 콘덴츠를 서버로 보낼수도 있는 유효하지 않은 문자를 제거하는 것)  python에서 사용하는 타입의 데이타로 변환하는 것이다.
+    - 유효성검증은 입력된 값이 해당 필드에 적절한 값인지 검사한다. (예를 들면, 데이타가 허용된 범위에 있는 값인지, 너무 짧거나 길지 않은지 등등) 
+1. 입력된 어떤 데이타가 유효하지 않다면, 폼을 다시 표시하는데 이번에는 초기값이 아니라 유저가 입력한 데이타와 문제가 있는 필드의 에러 메시지와 함께 표시한다.
+1. 입력된 모든 데이타가 유효하다면, 요청된 동작을 수행한다. (예를 들면, 데이타를 저장하거나, 이메일을 보내거나, 검색결과를 반환하거나, 파일을 업로딩하는 작업 등등)
+1. 일단 모든 작업이 완료되었다면, 사용자를 새로운 페이지로 보낸다.
+
+- 참고사이트
+>https://developer.mozilla.org/ko/docs/Learn/Server-side/Django/Forms
 
 ## FormView 
 ```python
 # views.py
-# MyForm 폼클래스를 적용하여 about.html을 보여주고
+# MyForm 폼클래스를 적용하여 about.html을 보여주고 
 
 from django.views.generic.edif import FormView
  
@@ -100,11 +119,24 @@ class AboutView(FormView):
     def form_valid(self, form):
         # cleaned_data로 관련 로직 처리
         return super(MyFormView, self).form_valid(form)
+    
+    # 폼을 생성할때 어떤 인자값을 전달해서 만들지 결정
+    # Form 첫 방문일때 기본적으로 Form 생성하고 전달하지만
+    # http method가 Post, Put 일때 첫 방문이라도 폼을 만들어서 전달한다.
+    # 아래는 session를 사용하기 위해  request를 넣는 작업을 한다.
+    def get_form_kwargs(self, **kwargs):
+        print("===== get_from_kwargs ======")
+        kw = super().get_form_kwargs(**kwargs)
+        kw.update({
+            'request': self.request
+        })
+
+        return kw
 ```
 - form_class : 사용자에 보여줄 폼을 정의한 forms.py 파일 내의 클래스명
 - template_name : 폼을 포함하여 렌더링할 템플릿 파일 이름
 - success_url : MyFormView 처리가 정상적으로 완료되었을 때 리다이렉트시킬 URL
-- form_valid() 함수 : 유효한 폼 데이터로 처리할 로직 코딩, 반스시 super() 함수 호출.
+- form_valid() 함수 : 유효한 폼 데이터로 처리할 로직 코딩, 반드시 super() 함수 호출.
 
 ## ListView
 - 글 목록이 전체를 표시하거나, 특정 DB table의 전체를 표시할 대 활용할 수 있다.
@@ -186,3 +218,50 @@ class ProductDeatil(DetailView):
 >https://ssungkang.tistory.com/entry/Django-CBV-2-Generic-display-views
 https://wayhome25.github.io/django/2017/05/02/CBV/  
 
+## Decorator
+- 함수를 Wrapping 하는 기법으로 반복되는 코드를 줄일 수 있다는 장점이 있습니다. 
+- 공통으로 처리해야 할 action이 있다면 효율적으로 활용가능하다.
+- 함수 또는 클래스에 사용할 수 있다. 
+```python
+# decorators.py
+"""규칙
+1. 인수로 함수를 받는다.
+2. wrap 함수를 반드시 return 해야한다.
+3. wrap 함수에서 인수로 받는 함수를 호출할때는 함수를 호출할때와 동일하게 맞춰줘야 한다.
+"""
+def login_required(func):
+
+    def wrap(request, *args, **kwargs):
+        user = request.session.get('user')
+        # None 이거나 빈값이면
+        if user is None or not user:
+            return redirect('/login')
+
+        print('login_require')
+        return func(request, *args, **kwargs)
+
+    return wrap
+
+---
+
+#  product/views.py
+"""
+class에 사용시 필요한 임포트와 사용법
+1. from django.utils.decorators import method_decorator
+2. @method_decorator(decorator, name="메소드 이름")
+"""
+from django.utils.decorators import method_decorator
+
+@method_decorator(admin_required, name='dispatch')
+class ProductCreate(FormView):
+    template_name = 'register_product.html'
+    form_class = RegisterForm
+    success_url = '/product/'
+
+# 함수에 사용
+@admin_required
+def decoTest():
+    print('use decorator to function')
+
+
+```

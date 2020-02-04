@@ -4,7 +4,10 @@ from django.db import models
 
 
 class Order(models.Model):
+
     # app에 class로 명시해준다.
+    objects = models.Manager()
+
     # on_delete은 삭제되었을때 어떻게 할건지 / models.CASCADE : 원본이 삭제되면 같이 삭제
     fcuser = models.ForeignKey(
         'fcuser.FcUser', on_delete=models.CASCADE, verbose_name='사용자')
