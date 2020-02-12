@@ -118,7 +118,7 @@ class AboutView(FormView):
  
     def form_valid(self, form):
         # cleaned_data로 관련 로직 처리
-        return super(MyFormView, self).form_valid(form)
+        return super().form_valid(form)
     
     # 폼을 생성할때 어떤 인자값을 전달해서 만들지 결정
     # Form 첫 방문일때 기본적으로 Form 생성하고 전달하지만

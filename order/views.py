@@ -5,7 +5,9 @@ from django.utils.decorators import method_decorator
 from .forms import RegisterForm
 from .models import Order
 from fcuser.decorators import login_required
-
+from django.db import transaction
+from product.models import Product
+from fcuser.models import Fcuser
 # Create your views here.
 
 
@@ -16,7 +18,23 @@ class OrderCreate(FormView):
 
     # is_valid을 실패했을때
     def form_invalid(self, form):
-        return redirect('/product/'+str(form.product))
+        return redirect('/product/'+str(form.data.get('product')))
+
+    def form_valid(self, form):
+        print("===== OrderCreate  ::  form_valid  ======")
+        product = form.data.get('product')
+        quantity = int(form.data.get('quantity'))
+        fcuser = self.request.session.get('user')
+        with transaction.atomic():
+            prod = Product.objects.get(pk=product)
+            order = Order(
+                quantity=quantity, product=Product.objects.get(pk=product), fcuser=Fcuser.objects.get(email=fcuser)
+            )
+            order.save()
+            prod.stock -= quantity
+            prod.save()
+
+        return super().form_valid(form)
 
     # 폼을 생성할때 어떤 인자값을 전달해서 만들지 결정
     # POST or PUT 일때 요청데이터도 제공된다.
