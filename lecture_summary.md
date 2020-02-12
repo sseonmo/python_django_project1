@@ -262,6 +262,16 @@ class ProductCreate(FormView):
 @admin_required
 def decoTest():
     print('use decorator to function')
-
-
 ```
+
+### django rast freamwork
+- 설치 : pip install djangorestframework
+- setting app등록
+````python
+# settings.py
+INSTALLED_APPS = [
+    # ...
+	'django_framework'
+	# ...
+]
+````
