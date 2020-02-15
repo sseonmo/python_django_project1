@@ -271,7 +271,66 @@ def decoTest():
 # settings.py
 INSTALLED_APPS = [
     # ...
-	'django_framework'
+	'rest_framework'
 	# ...
 ]
+
+---
+
+# serializers.py
+
+"""
+Serializer 는 REST 로 데이터를 주고 받을 때, 모델을 어떻게 주고 받을 것인가를 정의하기 위한 클래스이다.
+이것은 객체와 같은 보기 힘든 데이터를 JSON이나 XML처럼 보기 쉽게 데이터를 바꾸어 통신하게 해주는 역활을 한다.
+"""
+ 
+from rest_framework import serializers
+from .models import Product
+
+class ProductSerializer(serializers.ModelSerializer):
+
+	class Meta:
+		model = Product
+		# fiedls 를 명시하지 않으면 기본적으로 모델의 전체 필드를 가져온다.
+		fields = '__all__'
+        # fields = ('id', 'name', 'price', 'description', 'stock')
+
+---
+# views.py
+from rest_framework import generics
+from rest_framework import mixins
+from .serializers import ProductSerializer
+
+class ProductListAPI(generics.GenericAPIView, mixins.ListModelMixin):
+	serializer_class = ProductSerializer
+    # queryset = Product.objects.all()
+
+	def get_queryset(self):
+		return Product.objects.all().order_by('id')
+
+	def get(self, request, *args, **kwargs):
+		return self.list(request, *args, **kwargs)
+
+class ProductDetailAPI(generics.GenericAPIView, mixins.RetrieveModelMixin):
+	serializer_class = ProductSerializer
+    # queryset = Product.objects.all().order_by('id')
+
+	def get_queryset(self):
+		return Product.objects.all().order_by('id')
+
+	def get(self, request, *args, **kwargs):
+		return self.retrieve(request, *args, **kwargs)
+
+"""
+- generics에는 APIView 생성을 도와주는 class들이 정의되어 있습니다. mixins에는 get, post에 따라 json 파일을 만드는 데 도움이 되는 메서드들이 정의되어있습니다.
+- Json 형식으로 전달될 queryset을 넘겨줍니다.
+- 앞서 생성한 serializer를 지정합니다.
+- http method가 get인 경우 어떻게 처리할지에 대한 내용입니다. mixins.ListModelMixin에 존재하는 list 메서드를 사용하면 객체의 모든 리스트를 Json 형태로 반환합니다.
+
+그 외의 간단한 mixin을 알아봅시다..
+- ListModelMixin을 사용하면 get을 손쉽게 구현 가능.
+- CreateModelMixin을 사용하면 post를 손쉽게 구현 가능.
+- RetrieveModelMixin을 사용하면 상세보기를 손쉽게 구현 가능. (urls에서 반드시 pk를 넘겨주어야 합니다. DetailView class와 동일)
+
+"""
 ````

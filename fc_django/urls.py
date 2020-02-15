@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from fcuser.views import index, RegisterView, LoginView, logout
+from fcuser.views import index, RegisterView, LoginView, logout, ajaxPostTest
 from product.views import ProductList, ProductCreate, ProductDeatil, ProductListAPI, ProductDetailAPI
 from order.views import OrderCreate, OrderList
 
@@ -34,5 +34,8 @@ urlpatterns = [
     # REST API
     path('api/product/', ProductListAPI.as_view()),
     path('api/product/<int:pk>/', ProductDetailAPI.as_view()),
+
+    # TEST AJAX POST
+    path('api/posttest/', ajaxPostTest),
 
 ]

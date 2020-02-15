@@ -2,29 +2,68 @@
 {% load humanize %}
 <!-- todo 어떤기능이 있는지 정리필요 -->
 <!-- 여러 filter를 사용할 수 있다. -->
+{% block header%}
+<script>
+    function product_detail(id) {
+        $.ajax({
+            url: "/api/product/"+ id,
+            type: "GET",
+            dataType: "json",
+            success: function (result) {
+                $("#product-"+id).popover({
+                    html: true,
+                    content: result.name +"</br>"+ result.price
+                }).popover('show');
+            }
+        });
+    }
+
+    function product_leave(id) {
+        $("#product-"+id).popover('hide');
+    }
+
+    $(document).ready(function () {
+
+        $("#btn_post").on("click",function () {
+            $.ajax({
+            url: "/api/posttest/",
+            type: "POST",
+            data: {"param1": "aaaa", "param2" : 111 },
+            dataType: "json",
+            success: function (result) {
+                console.log(result)
+            }
+        });
+
+        })
+    })
+
+</script>
+{% endblock %}
 {% block contents %}
 <div class="row mt-5">
     <div class="col-12">
         <table class="table table-light">
             <thead class="thead-light">
-                <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">상품명</th>
-                    <th scope="col">가격</th>
-                    <th scope="col">등록날짜</th>
-                </tr>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">상품명</th>
+                <th scope="col">가격</th>
+                <th scope="col">등록날짜</th>
+            </tr>
             </thead>
             <tbody>
-                {% for product in product_list %}
-                <tr>
-                    <td scope="row">{{ product.id }}</td>
-                    <td><a href="/product/{{product.id}}/"> {{ product.name }}</a></td>
-                    <td>{{ product.price|intcomma }} 원</td>
-                    <td>{{ product.register_data|date:"Y-m-d h:i" }}</td>
-                </tr>
-                {% endfor %}
+            {% for product in product_list %}
+            <tr>
+                <td scope="row">{{ product.id }}</td>
+                <td><a id="product-{{ product.id }}" href="/product/{{product.id}}/" onmouseenter="product_detail({{ product.id }})" onmouseleave="product_leave({{ product.id }})"> {{ product.name }}</a></td>
+                <td>{{ product.price|intcomma }} 원</td>
+                <td>{{ product.register_data|date:"Y-m-d h:i" }}</td>
+            </tr>
+            {% endfor %}
             </tbody>
         </table>
+        <button type="button" id="btn_post" class="btn btn-primary">POST test</button>
     </div>
 </div>
 {% endblock %}

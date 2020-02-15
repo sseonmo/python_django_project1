@@ -1,3 +1,4 @@
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.generic.edit import FormView
 from .forms import RegisterForm, LoginForm
@@ -26,7 +27,6 @@ class RegisterView(FormView):
 		fcuser.save()
 		return super().form_valid(form)
 
-
 class LoginView(FormView):
 	print("========== LoginView =============")
 	template_name = 'login.html'
@@ -45,3 +45,9 @@ def logout(request):
 		del (request.session['user'])
 
 	return redirect('/login/')
+
+def ajaxPostTest(request):
+	param = request.POST
+	print(param.get('param1'), param.get('param2'))
+	# return HttpResponse({"result": True})
+	return JsonResponse({"param1": param.get('param1'), "param2": param.get('param2')})
